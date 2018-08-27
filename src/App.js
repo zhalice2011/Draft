@@ -1,5 +1,5 @@
 import React, { Component } from 'react'
-import { EditorState, RichUtils, convertToRaw, convertFromRaw } from 'draft-js'
+import { EditorState, RichUtils, convertToRaw, convertFromRaw, getDefaultKeyBinding, KeyBindingUtil } from 'draft-js'
 import Editor from 'draft-js-plugins-editor'
 import createEmojiPlugin from 'draft-js-emoji-plugin'
 import createMarkdownPlugin from 'draft-js-markdown-plugin'
@@ -13,6 +13,13 @@ const emojiPlugin = createEmojiPlugin()
 const markdownPlugin = createMarkdownPlugin()
 const highlightPlugin = createHighlightPlugin()
 
+// 映射自定义的键盘快捷键
+const myKeyBindingFn = (e) => {
+  if (e.keyCode === 83 /* `S` key */ && KeyBindingUtil.hasCommandModifier(e)) {
+    return 'save';
+  } 
+  return getDefaultKeyBinding(e);
+}
 
 const { EmojiSuggestions } = emojiPlugin
 class App extends Component {
@@ -21,30 +28,29 @@ class App extends Component {
     this.state = {}
 
     // 获取上次保存的数据
-    const content = window.localStorage.getItem('content');
+    const content = window.localStorage.getItem('content')
     if (content) {
-      this.state.editorState = EditorState.createWithContent(convertFromRaw(JSON.parse(content)));
+      this.state.editorState = EditorState.createWithContent(convertFromRaw(JSON.parse(content)))
     } else {
-      this.state.editorState = EditorState.createEmpty();
+      this.state.editorState = EditorState.createEmpty()
     }
   }
 
   onChange = (editorState) => {
-    const contentState = editorState.getCurrentContent()
-    // console.log('convertToRaw state', convertToRaw(contentState))
-    // console.log('TOJS  state:', contentState && contentState.toJS())
-    this.saveContent(contentState)
     this.setState({ editorState })
   }
 
   handleKeyCommand = (command) => {
+    if (command === 'save') { 
+      const contentState = this.state.editorState.getCurrentContent()
+      this.saveContent(contentState)
+    }
     const newState = RichUtils.handleKeyCommand(this.state.editorState, command)
     if (newState) {
       this.onChange(newState)
-      return 'handled' // 处理
+      return true;
     }
-     return 'not-handled' // 不处理
-     // 如果不返回 则是回退到本机命令处理
+    return 'not-handled' // 不处理
   }
 
   onUnderlineClick = () => {
@@ -54,10 +60,11 @@ class App extends Component {
   onToggleCode = () => {
     this.onChange(RichUtils.toggleCode(this.state.editorState))
   }
+  
+  saveContent = (content) => {  // 保存数据到本地
+    window.localStorage.setItem('content', JSON.stringify(convertToRaw(content)))
+  }
 
-  saveContent = debounce((content) => {  // 保存数据到本地
-    window.localStorage.setItem('content', JSON.stringify(convertToRaw(content)));
-  }, 300)
 
   render() {
     return (
@@ -65,10 +72,12 @@ class App extends Component {
         <button onClick={this.onUnderlineClick}>Underline</button>
         <button onClick={this.onToggleCode}>Code</button>
         <Editor
-          onChange={this.onChange} // 状态改变函数
+          ref={r => { this.editor = r }}
           editorState = {this.state.editorState} // 顶级状态
+          onChange={this.onChange} // 状态改变函数
 
-          handleKeyCommand={this.handleKeyCommand} // 返回代表命令的字符串
+          keyBindingFn={myKeyBindingFn} // 返回键盘对应的命令action 字符串
+          handleKeyCommand={this.handleKeyCommand} // 根据命令action匹配对应的操作函数
           plugins={[emojiPlugin, highlightPlugin, markdownPlugin]}
         /> 
         <EmojiSuggestions />
