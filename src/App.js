@@ -2,6 +2,7 @@ import React, { Component } from 'react'
 import { EditorState, RichUtils, convertToRaw, convertFromRaw } from 'draft-js'
 import Editor from 'draft-js-plugins-editor'
 import createEmojiPlugin from 'draft-js-emoji-plugin'
+import createMarkdownPlugin from 'draft-js-markdown-plugin'
 import createHighlightPlugin from './highlightPlugin'
 import debounce from 'lodash/debounce'
 
@@ -9,6 +10,7 @@ import 'draft-js-emoji-plugin/lib/plugin.css'
 import './App.css'
 
 const emojiPlugin = createEmojiPlugin()
+const markdownPlugin = createMarkdownPlugin()
 const highlightPlugin = createHighlightPlugin()
 
 
@@ -67,7 +69,7 @@ class App extends Component {
           editorState = {this.state.editorState} // 顶级状态
 
           handleKeyCommand={this.handleKeyCommand} // 返回代表命令的字符串
-          plugins={[emojiPlugin, highlightPlugin]}
+          plugins={[emojiPlugin, highlightPlugin, markdownPlugin]}
         /> 
         <EmojiSuggestions />
       </div>
