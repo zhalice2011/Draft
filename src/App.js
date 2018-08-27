@@ -1,7 +1,13 @@
-import React, { Component } from 'react';
-import { Editor, EditorState, RichUtils } from 'draft-js';
-import './App.css';
+import React, { Component } from 'react'
+import { EditorState, RichUtils } from 'draft-js'
+import Editor from 'draft-js-plugins-editor'
+import createEmojiPlugin from 'draft-js-emoji-plugin'
+import 'draft-js-emoji-plugin/lib/plugin.css'
+import './App.css'
 
+const emojiPlugin = createEmojiPlugin()
+
+const { EmojiSuggestions } = emojiPlugin
 class App extends Component {
   constructor (props) {
     super(props)
@@ -17,7 +23,7 @@ class App extends Component {
   handleKeyCommand = (command) => {
     const newState = RichUtils.handleKeyCommand(this.state.editorState, command)
     if (newState) {
-      this.onChange(newState);
+      this.onChange(newState)
       return 'handled' // 处理
     }
      return 'not-handled' // 不处理
@@ -42,11 +48,12 @@ class App extends Component {
           editorState = {this.state.editorState} // 顶级状态
 
           handleKeyCommand={this.handleKeyCommand} // 返回代表命令的字符串
-
+          plugins={[emojiPlugin]}
         /> 
+        <EmojiSuggestions />
       </div>
     )
   }
 }
 
-export default App;
+export default App
