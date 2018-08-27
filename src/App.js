@@ -2,10 +2,14 @@ import React, { Component } from 'react'
 import { EditorState, RichUtils } from 'draft-js'
 import Editor from 'draft-js-plugins-editor'
 import createEmojiPlugin from 'draft-js-emoji-plugin'
+import createHighlightPlugin from './highlightPlugin'
+
 import 'draft-js-emoji-plugin/lib/plugin.css'
 import './App.css'
 
 const emojiPlugin = createEmojiPlugin()
+const highlightPlugin = createHighlightPlugin()
+
 
 const { EmojiSuggestions } = emojiPlugin
 class App extends Component {
@@ -48,7 +52,7 @@ class App extends Component {
           editorState = {this.state.editorState} // 顶级状态
 
           handleKeyCommand={this.handleKeyCommand} // 返回代表命令的字符串
-          plugins={[emojiPlugin]}
+          plugins={[emojiPlugin, highlightPlugin]}
         /> 
         <EmojiSuggestions />
       </div>
